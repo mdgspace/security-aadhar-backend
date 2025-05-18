@@ -10,7 +10,7 @@ def add_person(file: str):
     people.count += 1
     log = Log(person=person, isIn=True)
     people.logs.append(log)
-    return True
+    return aadhar, name
 
 def remove_person(aadhar: int):
     for i in people.people_in:

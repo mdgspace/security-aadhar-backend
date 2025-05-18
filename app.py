@@ -47,7 +47,10 @@ async def register_user(
 ):
     try:
         file_path = save_image(file=file, upload_dir=UPLOAD_DIR)
-        add_person(file=file_path)
+        aadhar, name = add_person(file=file_path)
+        return aadhar
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to register user")
 
 
     
