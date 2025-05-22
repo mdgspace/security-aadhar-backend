@@ -1,6 +1,6 @@
 import os
 import shutil
-from pydantic import UploadFile
+from fastapi import UploadFile
 import uuid
 
 

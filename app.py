@@ -1,15 +1,22 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from views import add_person, remove_person, get_people_in, get_logs
+from views import add_person, remove_person, get_people_in, get_logs, get_people_out
 from utils import save_image
-import uuid
 import os
-import shutil
 
 app = FastAPI()
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class AddPersonRequest(BaseModel):
     aadhar: int
@@ -17,13 +24,7 @@ class AddPersonRequest(BaseModel):
 
 class RemovePersonRequest(BaseModel):
     aadhar: int
-
-@app.post("/addPerson")
-def add_person_endpoint(data: AddPersonRequest):
-    success = add_person(data.aadhar, data.name)
-    if not success:
-        raise HTTPException(status_code=400, detail="Could not add person")
-    return {"message": "Person added successfully"}
+        
 
 @app.post("/removePerson")
 def remove_person_endpoint(data: RemovePersonRequest):
@@ -40,16 +41,25 @@ def get_people_in_endpoint():
 def get_logs_endpoint():
     return get_logs()
 
+@app.get("/getRecentExits")
+def get_recent_exits():
+    return get_people_out()
+
 @app.post("/registerUser")
 async def register_user(
     file: UploadFile = File(...),
     isDigital: bool = Form(...)
 ):
+    print("Received file:", file.filename)
     try:
         file_path = save_image(file=file, upload_dir=UPLOAD_DIR)
-        aadhar, name = add_person(file=file_path)
+        # print("File saved at:", file_path) #Uncomment for debugging
+        # print("isdigital:", isDigital) #Uncomment for debugging
+        aadhar, name = add_person(path=file_path, isDigital=isDigital)
+        # print("User registered:", aadhar, name) #Uncomment for debugging
         return aadhar
     except Exception as e:
+        # print("Error:", e) #Uncomment for debugging
         raise HTTPException(status_code=500, detail="Failed to register user")
 
 
